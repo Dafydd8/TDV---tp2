@@ -28,11 +28,11 @@ def create_graph(data):
         llegada = stops[1]
         salida_tupla = (salida["time"], service)
         llegada_tupla = (llegada["time"], service)
-        salida_str = salida["station"]+"_"+str(salida_tupla) # Tag del nodo de salida
-        llegada_str = llegada["station"]+"_"+str(llegada_tupla) # Tag del nodo de llegada
+        salida_str = salida["station"]+"_"+str(salida['time']) # Tag del nodo de salida
+        llegada_str = llegada["station"]+"_"+str(llegada['time']) # Tag del nodo de llegada
         needed_rs = ceil(services[service]["demand"][0]/rs_capacity) # RS necesarios para el servicio
-        nodos_estacion[salida["station"]].append(salida_tupla) # Agregar el tiempo de salida a la lista de tiempos de la estación
-        nodos_estacion[llegada["station"]].append(llegada_tupla) # Agregar el tiempo de llegada a la lista de tiempos de la estación
+        nodos_estacion[salida["station"]].append(salida['time']) # Agregar el tiempo de salida a la lista de tiempos de la estación
+        nodos_estacion[llegada["station"]].append(llegada['time']) # Agregar el tiempo de llegada a la lista de tiempos de la estación
 
         G.add_node(salida_str, demand = 0) # Crear nodo de salida
         G.add_node(llegada_str, demand = 0) # Crear nodo de llegada
@@ -43,13 +43,25 @@ def create_graph(data):
 
     # Crear aristas entre los nodos de la misma estación
     for i in range(len(nodos_estacion[a])-1):
-        G.add_edge(a+"_"+str(nodos_estacion[a][i]), a+"_"+str(nodos_estacion[a][i+1]), weight = 0, lower_bound = 0, upper_bound = 1e9)
-        G.add_edge(b+"_"+str(nodos_estacion[b][i]), b+"_"+str(nodos_estacion[b][i+1]), weight = 0, lower_bound = 0, upper_bound = 1e9)
-    
-    # Crear aristas entre el último y el primer nodo de cada estación
-    G.add_edge(a+"_"+str(nodos_estacion[a][-1]), a+"_"+str(nodos_estacion[a][0]), weight = 1, lower_bound = 0, upper_bound = 1e9)
-    G.add_edge(b+"_"+str(nodos_estacion[b][-1]), b+"_"+str(nodos_estacion[b][0]), weight = 1, lower_bound = 0, upper_bound = 1e9)
+        primero = a+"_"+str(nodos_estacion[a][i])
+        segundo = a+"_"+str(nodos_estacion[a][i+1])
+        if primero != segundo:
+            G.add_edge(primero, segundo, weight = 0, lower_bound = 0, upper_bound = 1e9)
+        primero = b+"_"+str(nodos_estacion[b][i])
+        segundo = b+"_"+str(nodos_estacion[b][i+1])
+        if primero != segundo:
+            G.add_edge(primero, segundo, weight = 0, lower_bound = 0, upper_bound = 1e9)
 
+    # Crear aristas entre el último y el primer nodo de cada estación
+    ultimo = a+"_"+str(nodos_estacion[a][-1])
+    primero = a+"_"+str(nodos_estacion[a][0])
+    if ultimo != primero:
+        G.add_edge(ultimo, primero, weight = 1, lower_bound = 0, upper_bound = 1e9)
+    ultimo = b+"_"+str(nodos_estacion[b][-1])
+    primero = b+"_"+str(nodos_estacion[b][0])
+    if ultimo != primero:
+        G.add_edge(ultimo, primero, weight = 1, lower_bound = 0, upper_bound = 1e9)
+    
     return G, nodos_estacion
 
 def transform_graph(G):

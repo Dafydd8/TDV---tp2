@@ -1,0 +1,7 @@
+service id,hora,origen,tipo,hora,destino,tipo,demanda (pax)
+1,300,Belgrano C,D,320,Retiro,A,500
+2,360,Belgrano C,D,380,Retiro,A,500
+3,420,Belgrano C,D,440,Retiro,A,500
+4,480,Belgrano C,D,500,Retiro,A,500
+5,540,Belgrano C,D,560,Retiro,A,500
+6,600,Belgrano C,D,620,Retiro,A,500

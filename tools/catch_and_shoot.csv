@@ -1,0 +1,5 @@
+service id,hora,origen,tipo,hora,destino,tipo,demanda (pax)
+1,300,a,D,330,b,A,500
+2,360,a,D,390,b,A,500
+3,330,b,D,360,a,A,500
+4,390,b,D,420,a,A,500
