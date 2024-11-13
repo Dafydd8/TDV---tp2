@@ -6,6 +6,9 @@ import os
 ############################################################
 file_name = os.path.join(os.path.dirname(__file__), '../instances/toy_instance.json')
 #file_name = os.path.join(os.path.dirname(__file__), '../test/catch_and_shoot.json')
+#file_name = os.path.join(os.path.dirname(__file__), '../test/descordinados.json')
+#file_name = os.path.join(os.path.dirname(__file__), '../instances/pilar_cabred_semana.json')
+#file_name = os.path.join(os.path.dirname(__file__), '../test/one_sends.json')
 data = load_instance(file_name)
 grafo, nodos_estacion = create_graph(data)
 #show_graph(grafo, data, nodos_estacion)
