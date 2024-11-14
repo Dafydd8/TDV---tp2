@@ -204,3 +204,13 @@ def modelo_empresa(data):
                 stock[estacion] = 0 #ya no tenemos mas
 
     return unidades_nuevas, stock
+
+def modelo_circulacion(data):
+    # CREAR Y MOSTRAR EL GRAFO COMO SE PROPONE EN EL ENUNCIADO #
+    grafo, nodos_estacion = create_graph(data)
+    #show_graph(grafo, data, nodos_estacion)
+
+    # RESOLVER EL PROBLEMA COMO PROBLEMA DE CIRCULACIÓN Y MOSTRAR EL FLUJO RESULTANTE #
+    circulacion = solve_circulacion(grafo)
+    #show_flow(grafo, circulacion, data, nodos_estacion)
+    return get_cost(grafo, circulacion, nodos_estacion)

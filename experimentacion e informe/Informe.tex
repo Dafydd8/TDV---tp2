@@ -1,0 +1,44 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsfonts,amssymb} % Paquetes para matemáticas
+\usepackage{ulem} % Para subrayar texto
+\usepackage{geometry}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{float}
+
+\geometry{
+    a4paper,
+    left=2cm,
+    right=2cm,
+    top=2.5cm,
+    bottom=2.5cm,
+    includefoot,
+    headheight=15pt,
+    headsep=0.5cm,
+    footskip=1cm
+}
+
+\title{TP2 - Gestion eficiente de recursos en sistemas ferroviarios}
+\author{Candelaria Sutton, Dafydd Jenkins, Josefina Jahde}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introducción}
+En este trabajo, abordamos el problema de la planificación y gestión óptima del material rodante para una empresa ferroviaria. El problema consiste en definir una asignación eficiente de material rodante a las distintas estaciones cabecera de una linea ferroviaria. Se busca minimizar el número total de unidades de material rodante necesarias para cubrir la demanda de la línea en cada horario, considerando que es posible la reutilzación de unidades entre viajes.
+
+Este problema pertenece a la categoría de problemas de circulación en redes y tiene gran relevancia en la optimización de recursos en operaciones logísticas y de transporte. En el contexto de la industria ferroviaria, una asignación ineficiente del material rodante (trenes) puede llevar a costos innecesarios y al uso ineficiente de los recursos disponibles, afectando tanto a la empresa como a los usuarios del servicio.
+
+El objetivo de este trabajo es desarrollar un modelo que permita resolver el problema de circulación de trenes utilizando algoritmos de flujo de costo mínimo. Además, se implementará un set de experimentos para analizar el rendimiento del modelo en diferentes escenarios de demanda y costos.
+
+En este informe se pueden encontrar las secciones:
+\begin{itemize}
+    \item Sección 2: se describe la metodología, explicando cómo se modeló el problema y se implementó dicho modelo.
+    \item Sección 3: detalla los experimentos realizados, presentando hipótesis, diseño de pruebas y resultados obtenidos.
+    \item Sección 4: se presentan las conclusiones, discutiendo la efectividad del modelo y posibles extensiones para trabajos futuros.
+\end{itemize}
+
+\end{document}
