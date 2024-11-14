@@ -211,11 +211,9 @@ def modelo_empresa(data):
 
 def modelo_circulacion(data):
     '''Resuelve el problema de la instancia data como un problema de circulación'''
-    # CREAR Y MOSTRAR EL GRAFO COMO SE PROPONE EN EL ENUNCIADO #
+    # CREAR EL GRAFO COMO SE PROPONE EN EL ENUNCIADO #
     grafo, nodos_estacion = create_graph(data)
-    #show_graph(grafo, data, nodos_estacion)
 
-    # RESOLVER EL PROBLEMA COMO PROBLEMA DE CIRCULACIÓN Y MOSTRAR EL FLUJO RESULTANTE #
+    # RESOLVER EL PROBLEMA COMO PROBLEMA DE CIRCULACIÓN #
     circulacion = solve_circulacion(grafo)
-    #show_flow(grafo, circulacion, data, nodos_estacion)
     return get_cost(grafo, circulacion, nodos_estacion)
