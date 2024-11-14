@@ -169,3 +169,38 @@ def show_flow(G, flow, data, nodos_estacion):
 
     # Mostrar el gráfico
     plt.show()
+
+def modelo_empresa(data):
+    '''Gestiona las unidades y el stock en cada estación de acuerdo con las reglas establecidas por la empresa'''
+    stock = {station: 0 for station in data["stations"]}
+    unidades_nuevas = {station: 0 for station in data["stations"]}
+    
+    eventos = []
+    for service in data["services"]:
+        stops = data["services"][service]["stops"]
+        salida = stops[0]
+        llegada = stops[1]
+        demanda = data["services"][service]["demand"][0]
+
+        eventos.append((salida['time'], salida['station'], "salida", demanda))
+        eventos.append((llegada['time'], llegada['station'], "llegada", demanda))
+
+    # Ordenar eventos por tiempo
+    eventos.sort()
+
+    for _, estacion, tipo, demanda in eventos:
+        if tipo == "llegada":
+            # se incrementar el stock
+            stock[estacion] += (ceil(demanda / data["rs_info"]["capacity"]))
+        elif tipo == "salida":
+            # cubrimos la demanda con el stock disponible
+            unidades_necesarias = (ceil(demanda / data["rs_info"]["capacity"]))
+            if stock[estacion] >= unidades_necesarias:
+                stock[estacion] -= unidades_necesarias
+            else:
+                # No hay suficiente stock
+                deficit = unidades_necesarias - stock[estacion]
+                unidades_nuevas[estacion] += deficit
+                stock[estacion] = 0 #ya no tenemos mas
+
+    return unidades_nuevas, stock
