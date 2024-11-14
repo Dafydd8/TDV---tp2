@@ -171,7 +171,7 @@ def show_flow(G, flow, data, nodos_estacion):
     plt.show()
 
 def modelo_empresa(data):
-    '''Gestiona las unidades y el stock en cada estación de acuerdo con las reglas establecidas por la empresa'''
+    '''Resuelve el problema de la instancia data siguiendo el modelo de la empresa'''
     stock = {station: 0 for station in data["stations"]}
     unidades_nuevas = {station: 0 for station in data["stations"]}
     
@@ -202,10 +202,15 @@ def modelo_empresa(data):
                 deficit = unidades_necesarias - stock[estacion]
                 unidades_nuevas[estacion] += deficit
                 stock[estacion] = 0 #ya no tenemos mas
+    
+    rv = 0
+    for clave in unidades_nuevas:
+        rv += unidades_nuevas[clave]
 
-    return unidades_nuevas, stock
+    return rv
 
 def modelo_circulacion(data):
+    '''Resuelve el problema de la instancia data como un problema de circulación'''
     # CREAR Y MOSTRAR EL GRAFO COMO SE PROPONE EN EL ENUNCIADO #
     grafo, nodos_estacion = create_graph(data)
     #show_graph(grafo, data, nodos_estacion)

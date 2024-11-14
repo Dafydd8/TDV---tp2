@@ -4,7 +4,6 @@ import os
 ##################
 # CARGAR LA DATA #
 ##################
-
 file_name = os.path.join(os.path.dirname(__file__), '../instances/toy_instance.json')
 #file_name = os.path.join(os.path.dirname(__file__), '../test/catch_and_shoot.json')
 #file_name = os.path.join(os.path.dirname(__file__), '../test/descordinados.json')
@@ -15,20 +14,11 @@ data = load_instance(file_name)
 ###########################################
 # RESOLVER USANDO EL MÉTODO DE LA EMPRESA #
 ###########################################
-unidades_nuevas, stock = modelo_empresa(data)
-print("stock: ", stock)
-print("Unidades nuevas: ", unidades_nuevas)
+costo = modelo_empresa(data)
+print("Con el modelo de la empresa se necesitan: ", costo, " unidades")
 
-############################################################
-# CREAR Y MOSTRAR EL GRAFO COMO SE PROPONE EN EL ENUNCIADO #
-############################################################
-grafo, nodos_estacion = create_graph(data)
-#show_graph(grafo, data, nodos_estacion)
-
-###################################################################################
-# RESOLVER EL PROBLEMA COMO PROBLEMA DE CIRCULACIÓN Y MOSTRAR EL FLUJO RESULTANTE #
-###################################################################################
-circulacion = solve_circulacion(grafo)
-cost = get_cost(grafo, circulacion, nodos_estacion)
-print("Costo de la circulación: ", cost)
-#show_flow(grafo, circulacion, data, nodos_estacion)
+############################################
+# RESOLVER USANDO EL MODELO DE CIRCULACIÓN #
+############################################
+costo = modelo_circulacion(data)
+print("Con el modelo de circulación se necesitan: ", costo, " unidades")
