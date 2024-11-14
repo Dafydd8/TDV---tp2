@@ -4,7 +4,6 @@ import os
 ##################
 # CARGAR LA DATA #
 ##################
-
 file_name = os.path.join(os.path.dirname(__file__), '../instances/toy_instance.json')
 data = load_instance(file_name)
 

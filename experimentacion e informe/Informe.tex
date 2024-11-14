@@ -6,6 +6,9 @@
 \usepackage{indentfirst}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage[backend=biber,style=apa]{biblatex}
+\addbibresource{bibliografia.bib}
+
 
 \geometry{
     a4paper,
@@ -19,7 +22,7 @@
     footskip=1cm
 }
 
-\title{TP2 - Gestion eficiente de recursos en sistemas ferroviarios}
+\title{TP2 - Gestión eficiente de recursos en sistemas ferroviarios}
 \author{Candelaria Sutton, Dafydd Jenkins, Josefina Jahde}
 \date{\today}
 
@@ -36,9 +39,149 @@ El objetivo de este trabajo es desarrollar un modelo que permita resolver el pro
 
 En este informe se pueden encontrar las secciones:
 \begin{itemize}
+    \item Sección 1: se describe el problema, las restricciones y las consideraciones del mismo.
     \item Sección 2: se describe la metodología, explicando cómo se modeló el problema y se implementó dicho modelo.
     \item Sección 3: detalla los experimentos realizados, presentando hipótesis, diseño de pruebas y resultados obtenidos.
     \item Sección 4: se presentan las conclusiones, discutiendo la efectividad del modelo y posibles extensiones para trabajos futuros.
 \end{itemize}
+
+\section*{Sección 1: El problema}
+El problema consiste en definir una asignación eficiente de material rodante a las distintas estaciones cabecera de una linea ferroviaria. Se busca minimizar el número total de unidades de material rodante necesarias para cubrir la demanda de la línea en cada horario, considerando que es posible la reutilzación de unidades entre viajes. Para cada viaje que se realiza en la línea durante un día, se tiene la demanda en cantidad de pasajeros y las estaciones y horarios de salida y llegada. Además se cuenta con restrcciones: cantidad máxima de unidades que pueden circular por la línea y la capacidad máxima (en pasajeros) de cada unidad.
+
+Se toma una versión simplificada con las siguientes consideraciones:
+\begin{itemize}
+    \item Los traspasos de unidades ocurren únicamente en las cabeceras de la línea.
+    \item Se pueden almacenar infinita cantidad de unidades de material rodante en las cabeceras.
+    \item Todos los servicios tienen el mismo tipo de unidad rodante (en cuanto a cantidad de pasajeros).
+
+\end{itemize}
+
+\section*{Sección 2: Modelado e implementación}
+Para la resolución del problema, se adaptó  el modelo propuesto por Alexander Schrijver REFERENCIA!!!. Dicho modelo se realiza a partir del cronograma, la informacion sobre la demanda y las restricciones de los servicios que recorren una linea durante el día, usando un digrafo que modele una red espacio-tiempo. Se formula la decisión como un problema de Circulación sobre la red que se reduce a un problema de Flujo de Costo Mínimo y se resuleve utilizando algoritmos de flujo. Tanto para la construcción de la red como para los algoritmos de flujo se utilizó la librería $NetworkX$ de Python.
+
+\subsection*{Creación del Grafo}
+
+La resolución comienza con la construcción del digrafo de la red. El mismo contiene un conjunto de vértices $V$, donde cada vértice representa un evento de llegada o salida a una estación. Dicho nodo tiene como etiqueta el nombre de la estación y el horario correspondiente y posee un imbalance igual a 0. El conjunto $A$ de arcos del digrafo está compuesto por tres tipos:
+
+\begin{itemize}
+    \item de tren: $(i, j)$ conecta el evento de partida y el de arribo de un servicio, representando el viaje del servicio desde su estacion origen a su estación destino. Estos arcos cuentan con una cota inferior $l_{ij}$ de la cantidad de unidades necesarias para satisfacer la demanda y una cota superior $u_{ij}$ de la cantidad maxima de unidades que pueden circular en un servicio. El costo es $c_{ij} = 0$.
+    \item de traspaso: $(i, j)$ conecta dos eventos consecutivos (en tiempo) dentro de una estación, indicando el pasaje de unidades entre eventos. Esta arista tiene cota inferior $l_{ij} = 0$, $u_{ij} = \infty$ y costo $c_{ij} = 0$.
+    \item de trasnoche: dos de ellas, una para cada estación, conectan el ultimo evento del día con el primero. Modela las condiciones de borde respecto que la cantidad de unidades al finalizar el día en una estación debe ser la necesaria para poder iniciar las operaciones al día siguiente.
+
+Otros dos arcos conectan el último evento de una estación con el primero de la otra. Modela el traspaso de unidades al final de un dia entre estaciones para la utilización al comienzo del siguiente.
+
+Inicialmente, todos estos arcos tienen $l_{ij}= 0$, $u_{ij} = \infty$ y $c_{ij} = 1$. Además, estos arcos son los utilizados para obtener la cantidad de unidades de material rodantes necesarias en la línea.
+\end{itemize}
+
+La construcción del grafo se realiza con el método \texttt{create\_graph()} que, al igual que todos los demás métodos de esta implementación, se encuentra implementado en el archivo \texttt{railway\_service.py}. 
+
+\subsubsection*{Entrada del Algoritmo}
+
+El algoritmo recibe un diccionario \texttt{data} con la siguiente estructura:
+
+\begin{itemize}
+    \item \texttt{data["services"]}: Diccionario que contiene la información de los servicios (horarios de salida y llegada, demanda).
+    \item \texttt{data["rs\_info"]["capacity"]}: Capacidad del material rodante (RS).
+    \item \texttt{data["rs\_info"]["max\_rs"]}: Máximo número de unidades de RS disponibles.
+    \item \texttt{data["stations"]}: Lista de estaciones, en este caso, se consideran las estaciones \texttt{a} y \texttt{b}.
+\end{itemize}
+
+\subsubsection*{Proceso del Algoritmo}
+
+\begin{enumerate}
+    \item \textbf{Inicialización}: 
+    Se crea un grafo dirigido \texttt{G} utilizando NetworkX y se define un diccionario \texttt{nodos\_estacion} para almacenar los tiempos de salida y llegada de cada estación.
+
+    \item \textbf{Creación de Nodos y Aristas de Servicios}:
+    Para cada servicio en \texttt{data["services"]}, se extraen los horarios de salida y llegada. Se calculan los RS necesarios dividiendo la demanda del servicio por la capacidad de los RS. 
+    Se crean nodos para los tiempos de salida y llegada del servicio y se añade una arista dirigida entre ellos, con:
+    \begin{itemize}
+        \item \textbf{Peso (\texttt{weight})}: Inicialmente 0, ya que no hay costo asociado al servicio.
+        \item \textbf{Cota mínima (\texttt{lower\_bound})}: Igual al número de RS necesarios para el servicio.
+        \item \textbf{Cota máxima (\texttt{upper\_bound})}: Igual al máximo número de RS que pueden circular.
+    \end{itemize}
+
+    \item \textbf{Creación de Aristas Internas en las Estaciones}:
+    Para cada estación, se ordenan los tiempos de salida y llegada. Se crean aristas dirigidas entre tiempos consecutivos dentro de la misma estación para modelar el flujo continuo de trenes, con:
+    \begin{itemize}
+        \item \textbf{Peso (\texttt{weight})}: 0, ya que no hay costo asociado al traspaso de unidades entre servicios de una misma estacion.
+        \item \textbf{Cota mínima (\texttt{lower\_bound})}: 0.
+        \item \textbf{Cota máxima (\texttt{upper\_bound})}: Se fija en un valor alto (1e9).
+    \end{itemize}
+
+    \item \textbf{Creación de Aristas Cíclicas}:
+    Para garantizar la circulación continua del material rodante, se crean aristas entre el último y el primer nodo de cada estación. Estas aristas tienen un costo (\texttt{weight}) de 1, representando el costo adicional de mover unidades de RS entre servicios.
+
+    \item \textbf{Aristas de Conexión entre Estaciones}:
+    Se agregan aristas de conexión entre las estaciones \texttt{a} y \texttt{b} para modelar los traspasos posibles entre estaciones al final del día. Estas aristas también tienen un costo (\texttt{weight}) de 1 para representar el costo de los traspasos nocturnos.
+\end{enumerate}
+
+\subsubsection*{Salida del Algoritmo}
+
+El método devuelve:
+\begin{itemize}
+    \item \texttt{G}: El grafo dirigido que modela el problema de circulación, con nodos y aristas etiquetados con las demandas y capacidades correspondientes.
+    \item \texttt{nodos\_estacion}: Un diccionario con los tiempos de salida y llegada de cada estación, ordenados de menor a mayor.
+\end{itemize}
+
+\subsection*{Resolución del problema de Circulación mediante reducción al problema de Flujo de Costo Mínimo}
+Para la reducción del problema de Circulación a un problema de Flujo de Costo Mínimo, se toma el grafo construído y se construye uno nuevo con las siguientes modificaciones:
+\begin{itemize}
+    \item Para cada nodo $i$ el imbalance $b_i$ es:
+$$
+\begin{aligned}
+b_i = \sum_{j \in N^-(i)} l_{ji} - \sum_{j \in N^+(i)} l_{ij}
+\end{aligned}
+$$
+    \item Para cada arco, su nueva capacidad $\hat{u}_{ij}$ será $\hat{u}_{ij} = u_{ij} - l_{ij}$
+\end{itemize}
+
+Sea $\hat{x}^*$ la solución del problema de flujo de costo mínimo definido anteriormente,  $x^*_{ij} = l_{ij} + \hat{x}^*_{ij}$ es una solución óptima del problema de circulación original.
+
+La transformación anteriormente descrita se implementa en el método \texttt{solve\_circulacion()}. 
+
+\subsubsection*{Entrada del Algoritmo}
+El algoritmo recibe como parámetro el grafo \texttt{G} del problema de Circulación.
+
+\subsubsection*{Proceso del Algoritmo}
+
+\begin{enumerate}
+    \item \textbf{Inicialización}: 
+    Se crea un digrago \texttt{H} utilizando el método \texttt{transform\_graph()} que realiza la transformación del grafo según se describió anteriormente. Este método define \texttt{H} como digrafo, le agrega los nodos de \texttt{G} y las aristas del mismo pero con la capacidad correspondiente según la transformación. Luego modifica los imbalances de los nodos según la transformación, recorriendo todo arco y sumándole al nodo de salida el $l_{ij}$ y restándoselo al nodo de entrada. 
+
+    \item \textbf{Resolución del problema de Flujo de Costo Mínimo}:
+    Para el grafo \texttt{H} se resuelve el problema de Flujo de Costo Mínimo usando el método \texttt{min\_cost\_flow()} de \texttt{NetworkX}. Este método devuelve un diccionario que contiene para cada arco saliente de cada nodo de \texttt{H} el flujo que circula por dicho arco. Dicho diccionario se almacena en \texttt{circulacion}
+
+    \item \textbf{Transformación del Flujo de Costo Mínimo a la Circulación}:
+    Se recorren los nodos \texttt{u} del flujo de los que salen arcos. Para cada uno de sus vecinos \texttt{v}, se modifica \texttt{circulacion} sumándole a la arista \texttt{u$\rightarrow$v} el $l_{ij}$.
+
+\end{enumerate}
+
+\subsubsection*{Salida del Algoritmo}
+Se retorna el diccionario \texttt{circulacion} que contiene, para cada arco saliente de cada nodo el flujo que circula por dicho arco.
+
+\subsection*{Generación de la respuesta final (cantidad de unidades necesarias)}
+Para calcular la cantidad total de unidades necesarias se utiliza el método implementado \texttt{get\_cost()}.
+
+\subsubsection*{Entrada del Algoritmo}
+El algoritmo recibe como parámetros
+
+\begin{itemize}
+    \item el grafo \texttt{G} del problema de Circulación.
+    \item el diccionario \texttt{circulación} resultante de \texttt{solve\_circulacion()}.
+    \item el diccionario \texttt{nodos\_estacion} resultante de \texttt{create\_graph()} (para obtener las etiquetas del primer y último nodo de cada estación).
+\end{itemize}
+
+\subsubsection*{Proceso del Algoritmo}
+
+\begin{enumerate}
+    \item \textbf{Cálculo del costo resultante}:
+    Se inicializa el costo resultante \texttt{cost} incialmente igual a 0.
+    Sean las estaciones $x, y$ se recorren las posibles combinaciones $(a, b)$ para $a, b \in \{x, y\}$. Para cada combinación se define \texttt{begin} como el primer nodo de $a$, y  \texttt{end} como el último nodo de $b$. Finalmente, se suma a \texttt{cost} el flujo circulante por el arco $\texttt{end}\rightarrow\texttt{begin}$.
+
+\end{enumerate}
+
+\subsubsection*{Salida del Algoritmo}
+Se retorna \texttt{cost}.
 
 \end{document}
