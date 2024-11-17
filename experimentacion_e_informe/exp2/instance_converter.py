@@ -2,6 +2,7 @@ import csv
 import json
 import copy
 import pprint
+import os
 
 for i in range(10):
     instance = {}
@@ -10,7 +11,7 @@ for i in range(10):
     instance['cost_per_unit'] = {'Tigre' : 1.0, 'Retiro' : 1.0}
 
 
-    filename = f'demandas_normales{i+1}'
+    filename = os.path.join(os.path.dirname(__file__), f'demanda_alta/instancia{i+1}')
     # Open the CSV file in read mode
     with open(filename + '.csv', 'r') as csvfile:
         # Create a CSV reader object

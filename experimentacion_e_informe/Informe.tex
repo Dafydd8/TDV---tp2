@@ -214,6 +214,59 @@ Los algoritmos desarrollados e implementados se testearon con la instancia \text
 
 \section*{Sección 3: Experimentación}
 
-Se realizó una serie de experimentos
+Se realizó una serie de experimentos para evaluar el rendimiento y la efectividad del modelo propuesto. El objetivo principal de la experimentación es analizar cómo se comporta el algoritmo en distintos escenarios, considerando variaciones en la demanda, restricciones de capacidad, y costos asociados a los traspasos nocturnos. Se han diseñado y ejecutado diversos experimentos que permiten validar la solución implementada, comparar su desempeño con el método de la empresa y estudiar el impacto de los diferentes parámetros en los resultados.
+
+\subsection*{Experimento 1: Modelo de Circulación vs. Modelo de la empresa}
+
+Como se planteaba en el escenario propuesto en el enunciado, la empresa ferroviaría poseía un método para resolver el problema. La idea de este experimento es ver que el modelo de Circulación propuesto genera soluciones que son mejores (o en el peor caso iguales) a las generadas por el método de la empresa.
+
+Para ello, se generó un conjunto de 10 instancias. Las mismas tienen 5 eventos de salida para cada estación, con horarios ascendentes y randomizados. Las demandas de los eventos se generaron siguiendo distribuciones normales con media 1500 y varianza 200 (cuidando que no sean menores a 0 y no pasen de la maxima capacidad posible para los servicios). La generación de estos datos se realizó con el archivo \texttt{generador\_csv.py} que se encunetra en \texttt{experimentacion\_e\_informe}$/$\texttt{exp1}$/$\texttt{media\_alta}.
+
+Luego, se comparó la solución resultante de cada modelo para cada instancia (implementado en \texttt{analize.py}) y se almacenaron dichos resultados en el archivo \texttt{resultados.csv}. Luego, para cada instancia se tomo la diferencia de las soluciones obtenidas ($solucion\_empresa - solucion\_circulacion$). Los resultados se pueden visualizar en el siguiente gráfico:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{exp1/plot_mediaAlta.png}
+    \caption{Diferencias entre la solucion de la empresa y la solucion de circulacion (media alta)}
+    \label{fig:ejemplo}
+\end{figure}
+
+Se repitió el proceso para demandas normales con media 500 (instancias y resultados en \texttt{experimentacion\_e\_informe} $/$ \texttt{exp1} $/$ \texttt{media\_baja}). Los resultados obtenidos son similares a los de la media alta:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{exp1/plot_mediaBaja.png}
+    \caption{Diferencias entre la solucion de la empresa y la solucion de circulacion (media baja)}
+    \label{fig:ejemplo}
+\end{figure}
+
+Como se ve las diferencias son en ambos casos siempre mayores o iguales a 0. Por ello, concluimos que, como se esperaba, el modelo propuesto genera, tanto para demandas altas como bajas, mejores soluciones al problema. Como observación adicional, no pareciera que el nivel de la demanda (alta o baja) modifique esa mejoría en las respuestas. Para ambos niveles, la mejoría (diferencia) estuvo entre 0 y 6 unidades rodantes.
+
+\subsection*{Experimento 2: Análisis de la Cantidad de Unidades Nuevas vs. Demanda}
+
+Se busca evaluar cómo varía la cantidad de unidades nuevas necesarias para cubrir la demanda cuando se incrementa la demanda de los servicios. Nuestra hipótesis es que aprovechado el traspaso de unidades entre eventos, al aumentar linealmente la demanda media de las instancias, la cantidad de unidades nuevas necesarias aumentará de forma menor que lineal.
+
+Para esto, se generaron diez instancias para cada tipo de demanda media: baja (500), media-baja (1000), media-alta (1500) y alta (2000) (siempre cuidando que los valores estén entre 0 y 2500 que es el máximo por la capacidad de la red). Luego se corrió el modelo de circulación para cada instancia y se promedió la cantidad de unidaes necesarias por tipo de demanda.Las instancias y los archivos con la implementación del experimento están en \texttt{experimentacion\_e\_informe} $/$ \texttt{exp2}.  Los resultados se presentan a continuación:
+
+\begin{figure}[H]
+   \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{exp2/unidades_promedio.png}
+        \caption{Unidades necesarias promedio por tipo de demanda}
+        \label{fig:grafico1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{exp2/plot_unidades_promedio.png}
+        \caption{Curva de unidades necesarias promedio en función de la demanda media}
+        \label{fig:grafico2}
+    \end{minipage}
+    \label{fig:dos_graficos}
+\end{figure}
+
+Como se puede apreciar, medida que la demanda media aumenta linealmente (saltos de 500 pasajeros), la cantidad de unidades necesarias promedio para cubrir la demanda también lo hace (aunque desde el origen 
+
 
 \end{document}

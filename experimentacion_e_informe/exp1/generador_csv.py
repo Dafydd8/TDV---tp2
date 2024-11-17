@@ -1,7 +1,8 @@
 import numpy as np
+import os
 
 for i in range(1, 11):
-    filename = f'demandas_normales{i}.csv'
+    filename = os.path.join(os.path.dirname(__file__), f'media_baja/demandas_normales{i}.csv')
     f_out = open(filename, 'w')
     f_out.write('service id,hora,origen,tipo,hora,destino,tipo,demanda (pax)\n')
 
@@ -10,7 +11,7 @@ for i in range(1, 11):
         horarios.append(300+i*120+np.random.randint(-30, 30))
     for i in range(5):
         horarios.append(300+i*120+np.random.randint(-30, 30))
-    a = np.random.normal(1500, 200, 10)
+    a = np.random.normal(500, 200, 10)
     demandas = []
     for elem in a:
         if elem < 0:
