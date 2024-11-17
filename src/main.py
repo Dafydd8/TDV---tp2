@@ -4,7 +4,7 @@ import os
 ##################
 # CARGAR LA DATA #
 ##################
-file_name = os.path.join(os.path.dirname(__file__), '../instances/toy_instance.json')
+file_name = os.path.join(os.path.dirname(__file__), '../experimentacion_e_informe/demandas_normales.json')
 #file_name = os.path.join(os.path.dirname(__file__), '../test/catch_and_shoot.json')
 #file_name = os.path.join(os.path.dirname(__file__), '../test/descordinados.json')
 #file_name = os.path.join(os.path.dirname(__file__), '../instances/pilar_cabred_semana.json')

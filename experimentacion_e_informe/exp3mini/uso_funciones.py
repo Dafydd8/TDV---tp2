@@ -4,7 +4,7 @@ import os
 ##################
 # CARGAR LA DATA #
 ##################
-file_name = os.path.join(os.path.dirname(__file__), '../experimentacion_e_informe/demandas_normales.json')
+file_name = os.path.join(os.path.dirname(__file__), 'demandas_normales2.json')
 data = load_instance(file_name)
 
 ############################################################
