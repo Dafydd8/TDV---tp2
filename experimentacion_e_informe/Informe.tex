@@ -155,10 +155,10 @@ El algoritmo recibe como parámetro el grafo \texttt{G} del problema de Circulac
 \end{enumerate}
 
 \subsubsection*{Salida del Algoritmo}
-Se retorna el diccionario \texttt{circulacion} que contiene, para cada arco saliente de cada nodo el flujo que circula por dicho arco.
+Se retorna el diccionario \texttt{circulacion} que contiene, para cada arco saliente de cada nodo, el flujo que circula por dicho arco.
 
 \subsection*{Generación de la respuesta final (cantidad de unidades necesarias)}
-Para calcular la cantidad total de unidades necesarias se utiliza el método implementado \texttt{get\_cost()}.
+Para calcular la cantidad total de unidades necesarias, se suma el flujo circulante por las aristas de trasncohe. Para ello se utiliza el método implementado \texttt{get\_cost()}.
 
 \subsubsection*{Entrada del Algoritmo}
 El algoritmo recibe como parámetros
@@ -179,6 +179,41 @@ El algoritmo recibe como parámetros
 \end{enumerate}
 
 \subsubsection*{Salida del Algoritmo}
-Se retorna \texttt{cost}.
+Se retorna \texttt{cost}, el costo resultante de sumar el flujo circulante por las aristas de trasnoche.
+
+\subsection*{Otros métodos}
+Se implementaron otros métodos para facilitar la implementación de los algoritmos, la experimentación y el uso por parte de los usuarios. A continuación se describe la funcionalidad que cumple cada uno y el modo de uso esperado para aquellos usuarios que desearan realizar sus propias experimentaciones.
+
+\begin{itemize}
+	\item \texttt{load\_instance()}: recibe la ruta un archivo json, a partir del cual generar una instancia de cronograma para resolver el problema.
+	\item \texttt{show\_graph()}: recibe un grafo \texttt{G} y el diccionario \texttt{nodos\_estacion} generados por el método \texttt{create\_graph()} y una instancia de cronograma \texttt{data}. Muestra el grafo ubicando los nodos de cada estación por columnas. Muestra en los arcos la cota mínima $l$ y capacidad $u$.
+	\item \texttt{show\_flow()}:   recibe un grafo \texttt{G} y el diccionario \texttt{nodos\_estacion} generados por el método \texttt{create\_graph()}, una instancia de cronograma \texttt{data} y el flujo \texttt{flow} resultante del método \texttt{solve\_circulacion()}. Muestra el flujo en el grafo \texttt{G}.
+	\item \texttt{modelo\_circulacion()}: recibe una instancia de cronograma \texttt{data}. Resuelve el problema de circulación para la instancia haciendo uso de los métodos \texttt{create\_graph()}, \texttt{solve\_circulacion()} y \texttt{get\_cost()}, y devuelve el la cantidad de unidades necesarias para resolver el problema.
+	\item \texttt{modelo\_empresa()}: recibe una instancia de cronograma \texttt{data}. Resuelve el problema utilizando el método de la empresa y devuelve la cantidad de unidades necesarias. Para ello,
+
+\begin{enumerate}
+    \item Se inicializan contadores para el stock  y la cantidad de unidades nuevas de cada estación en 0.
+
+    \item Se almacenan los eventos de  \texttt{data} como tuplas y se las ordena según el horario.
+
+    \item Para cada evento, si es una llegada, se suman las unidades recibidas (iguales a lo minimo necesario para cubrir la demanda) al stock de la estación. Si es una salida, se trata de cubrir la demanda con el stock disponible. Si este es insuficiente, el remanente se obtiene incrementando la cantidad de unidades nuevas.
+
+    \item Se devuelve la cantidad de unidades nuevas para cada estación.
+\end{enumerate}
+
+\end{itemize}
+
+Los algoritmos desarrollados e implementados se testearon con la instancia \texttt{toy\_instance} propuesta por la cátedra y otras instancias que representan distintos casos bordes. Dichas instancias se encuentran en la carpeta \texttt{test} y son:
+
+\begin{itemize}
+	\item \texttt{catch\_and\_shoot}: caso en el que cada salida de una estación se puede cubrir con stock existente en la misma proveniente de una llegada previa.
+	\item \texttt{descordinados}: caso en el que cada salida necesitas generar unidades nuevas, es decir, no hay forma de optimizar la cantidad de unidades mediante el traspaso de las mismas entre eventos.
+	\item \texttt{one\_sends}: caso en el que solo una estación envía unidades.
+
+\end{itemize}
+
+\section*{Sección 3: Experimentación}
+
+Se realizó una serie de experimentos
 
 \end{document}
