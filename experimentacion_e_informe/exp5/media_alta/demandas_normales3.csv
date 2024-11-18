@@ -1,5 +1,0 @@
-service id,hora,origen,tipo,hora,destino,tipo,demanda (pax)
-0,290,Retiro,D,314,Tigre,A,1820
-1,440,Tigre,D,464,Retiro,A,1876
-2,279,Retiro,D,303,Tigre,A,1674
-3,427,Tigre,D,451,Retiro,A,1491

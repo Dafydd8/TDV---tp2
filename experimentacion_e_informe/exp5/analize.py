@@ -1,41 +1,33 @@
 from railway_service import *
 import os
-import matplotlib.pyplot as plt
 import numpy as np
+import time
 
-f_out = open(os.path.join(os.path.dirname(__file__), f'resultados.csv'), 'w')
-f_out.write('instancia,costo_1,costo_2,proporcion,demanda_media\n')
-proporciones = {}
+cantidades = [5000]
+tiempos = []
+#f_out = open(os.path.join(os.path.dirname(__file__), f'resultados.csv'), 'w')
+#f_out.write('cantidad,tiempo\n')
+for cantidad in cantidades:
+    ts = []
+    for i in range(5):
+        ##################
+        # CARGAR LA DATA #
+        ##################
+        file_name = os.path.join(os.path.dirname(__file__), f'{cantidad}.json')
+        data = load_instance(file_name)
+        
+        ##############################################################
+        # RESOLVER USANDO EL MODELO DE CIRCULACIÓN Y TOMAR EL TIEMPO #
+        ##############################################################
+        a = time.perf_counter()
+        costo = modelo_circulacion(data)
+        b = time.perf_counter()
+        ts.append(b-a)
+        if i == 0:
+            print(b-a)
+    tiempos.append(np.mean(ts))
+    #f_out.write(f'{cantidad},{np.mean(ts)}\n')
 
-for tipo in ['baja', 'alta']:
-    props = []
-    for i in range(10):
-        rtas = []
-        for j in range(2):
-            ##################
-            # CARGAR LA DATA #
-            ##################
-            file_name = os.path.join(os.path.dirname(__file__), f'media_{tipo}/costo{j+1}_{i+1}.json')
-            data = load_instance(file_name)
-            
-            ############################################
-            # RESOLVER USANDO EL MODELO DE CIRCULACIÓN #
-            ############################################
-            costo = modelo_circulacion(data)
-            rtas.append(costo)
-            
-        f_out.write(f'{i+1},{rtas[0]},{rtas[1]},{rtas[1]/rtas[0]},{tipo}\n')
-        props.append(rtas[1]/rtas[0])
-    proporciones[tipo] = props
+#f_out.close()
+print(tiempos)
 
-print(proporciones)
-plt.figure(figsize=(8, 6))
-plt.boxplot([proporciones["baja"], proporciones["alta"]], labels=["500", "1800"])
-plt.xlabel("Demanda media")
-plt.ylabel("Cociente")
-plt.title("Cociente de unidades necesarias para configuraciones de costo 1 y 2, según demanda")
-plt.grid()
-plt.show()
-
-print(proporciones)
-f_out.close()

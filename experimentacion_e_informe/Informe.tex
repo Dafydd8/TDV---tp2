@@ -70,6 +70,14 @@ El conjunto $A$ de arcos del digrafo está compuesto por tres tipos:
     \item de trasnoche: una para cada estación, conectan el ultimo evento del día (el nodo de final del día) con el primero. Modela las condiciones de borde respecto que la cantidad de unidades al finalizar el día en una estación debe ser la necesaria para poder iniciar las operaciones al día siguiente. Estos arcos tienen $l_{ij}= 0$, $u_{ij} = \infty$ y $c_{ij} = 1$. Además, estos arcos son los utilizados para obtener la cantidad de unidades de material rodantes necesarias en la línea.
 \end{itemize}
 
+Tomando como ejemplo la \texttt{toy\_instance} provista por la cátedra, el grafo quedaría como se muestra a continuación:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.60\textwidth]{esquema_toy_instance.png}
+    \caption{Grafo para \texttt{toy\_instance}}
+    \label{fig:ejemplo}
+\end{figure}
 
 La construcción del grafo se realiza con el método \texttt{create\_graph()} que, al igual que todos los demás métodos de esta implementación, se encuentra implementado en el archivo \texttt{railway\_service.py}. 
 
@@ -210,6 +218,8 @@ Los algoritmos desarrollados e implementados se testearon con la instancia \text
 	\item \texttt{catch\_and\_shoot}: caso en el que cada salida de una estación se puede cubrir con stock existente en la misma proveniente de una llegada previa.
 	\item \texttt{descordinados}: caso en el que cada salida necesitas generar unidades nuevas, es decir, no hay forma de optimizar la cantidad de unidades mediante el traspaso de las mismas entre eventos.
 	\item \texttt{one\_sends}: caso en el que solo una estación envía unidades.
+	\item \texttt{dia\_comun}: cronograma que busca emular las demandas aproximadas de una linea de tren un día normal de la semana.
+	\item \texttt{pilar\_cabred\_semana}: cronograma real del ramal Pilar-Cabred durante la semana.
 
 \end{itemize}
 
@@ -221,7 +231,7 @@ Se realizó una serie de experimentos para evaluar el rendimiento y la efectivid
 
 Como se planteaba en el escenario propuesto en el enunciado, la empresa ferroviaría poseía un método para resolver el problema. La idea de este experimento es ver que el modelo de Circulación propuesto genera soluciones que son mejores (o en el peor caso iguales) a las generadas por el método de la empresa.
 
-Para ello, se generó un conjunto de 10 instancias. Las mismas tienen 5 eventos de salida para cada estación, con horarios ascendentes y randomizados. Las demandas de los eventos se generaron siguiendo distribuciones normales con media 1500 y varianza 200 (cuidando que no sean menores a 0 y no pasen de la maxima capacidad posible para los servicios). La generación de estos datos se realizó con el archivo \texttt{generador\_csv.py} que se encunetra en \texttt{experimentacion\_e\_informe}$/$\texttt{exp1}$/$\texttt{media\_alta}.
+Para ello, se generó un conjunto de 10 instancias. Las mismas tienen 5 eventos de salida para cada estación, con horarios ascendentes y randomizados. Las demandas de los eventos se generaron siguiendo distribuciones normales con media 1500 y desvío estándar 200 (cuidando que no sean menores a 0 y no pasen de la maxima capacidad posible para los servicios). La generación de estos datos se realizó con el archivo \texttt{generador\_csv.py} que se encunetra en \texttt{experimentacion\_e\_informe}$/$\texttt{exp1}$/$\texttt{media\_alta}.
 
 Luego, se comparó la solución resultante de cada modelo para cada instancia (implementado en \texttt{analize.py}) y se almacenaron dichos resultados en el archivo \texttt{resultados.csv}. Luego, para cada instancia se tomo la diferencia de las soluciones obtenidas ($solucion\_empresa - solucion\_circulacion$). Los resultados se pueden visualizar en el siguiente gráfico:
 
@@ -273,7 +283,7 @@ Como se puede apreciar, medida que la demanda media aumenta linealmente (saltos 
 
 La idea es analizar cómo afectan las restricciones de las cotas máximas en los servicios a la solución óptima. Nuestra hipótesis es que disminuir la cota máxima de los servicios forzará un aumento en la cantidad de unidades nuevas, ya que se limitará la reutilización del material rodante.
 
-Para este experimento generamos 10 csv con demanda media 500 y varianza 200, y los convertimos a instancias con distintas cotas máximas. Las cotas utilizadas fueron: 25, 20, 15, 10. Luego se corrió el modelo de circulación sobre todas las instancias y se promedió la cantidad de unidades necesarias para cada una de las cotas. El resultado se muestra en la siguiente tabla:
+Para este experimento generamos 10 csv con demanda media 500 y desvío estándar 200, y los convertimos a instancias con distintas cotas máximas. Las cotas utilizadas fueron: 25, 20, 15, 10. Luego se corrió el modelo de circulación sobre todas las instancias y se promedió la cantidad de unidades necesarias para cada una de las cotas. El resultado se muestra en la siguiente tabla:
 
 \begin{figure}[H]
     \centering
@@ -288,7 +298,7 @@ Al contrario de lo esperado, no varió la cantidad de unidades necesitadas. Lueg
 
 Queremos estudiar el impacto del costo asociado a los traspasos nocturnos en la cantidad de unidades utilizadas. Que los costos de los arcos de trasnoche no sea el mismo para ambas estaciones, representaría que hay una estación en la que es más costoso dejar los trenes para que pasen la noche. Nuestra hipótesis es que para demandas bajas en relación a la capacidad máxima de la red, se podrá ajustar el flujo con los arcos del día para maximizar el uso de los arcos de trasnoche baratos y mantener mínimo el costo total, mientras que para demandas altas será inevitable tener que usar los arcos de trasnoche más caros.
 
-Para este experimento usamos los mismos csv del experimento 1 para la demanda baja y generamos diez nuevos con demanda normal con media 1800 y varianza 200 para la demanda alta. Al convertir los csv a instancias, lo hicimos una vez con costos de los arcos de trasnoche iguales  y una vez con un costo mayor al otro. Así, se obtienen dos configuraciones de costos, $costos_1 = (1, 1)$ y $costos_2 = (1, 2)$ para cada cronograma.  
+Para este experimento usamos los mismos csv del experimento 1 para la demanda baja y generamos diez nuevos con demanda normal con media 1800 y desvío estándar 200 para la demanda alta. Al convertir los csv a instancias, lo hicimos una vez con costos de los arcos de trasnoche iguales  y una vez con un costo mayor al otro. Así, se obtienen dos configuraciones de costos, $costos_1 = (1, 1)$ y $costos_2 = (1, 2)$ para cada cronograma.  
 
 Luego, se resolvió el problema para todas las instancias, obteniendo para cada cronograma una cantidad de unidades necesarias con la configuración $costos_1$ (la llamaremos $\#c_1$) y una cantidad de unidades necesarias con la configuración $costos_1$ (la llamaremos $\#c_2$).
 
@@ -304,5 +314,88 @@ Finalmente, para cada cronograma, se calcula la proporción de aumento en las un
 Como se esperaba, parece haber evidencia de que el aumento proporcional es mayor para demandas altas que para demandas bajas. 
 
 \subsection*{Experimento 5: Escalabilidad del modelo}
+
+Se desea evaluar cómo varía el tiempo de ejecución del algoritmo al aumentar el tamaño del problema (número de servicios y estaciones). Se espera que el tiempo de ejecución aumente de forma polinómica con el tamaño del problema debido a la complejidad del algoritmo de flujo de costo mínimo.
+
+Para esto se consideraron distintos tamños de entrada para el problema: 500, 1000, 2000, 5000, 10000 y 20000 eventos de salida para cada estación. Se eligió usar tiempos para los eventos aleatorios y demandas con distribución normal de media 1000 y desvío estandar 200.
+
+Luego, para cada tamaño de entrada posible se tomó 5 veces el tiempo de ejecución de \texttt{modelo\_circulacion()} y se tomó el promedio de dichos tiempos. Los resultados se presentan a continuación:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{exp5/tiempos.png}
+    \caption{Tiempo de ejecución del modelo según el tamaño de entrada}
+    \label{fig:ejemplo}
+\end{figure}
+
+Si bien resulta evidente que el tiempo de ejecución no es lineal en el tamaño de la entrada, tampoco resulta evidente ver a qué clase de polinomio se aproxima. La profundización en el estudio de la complejidad temporal del algoritmo puede ser tema para futuros experimentos y trabajos.
+
+\section*{Sección 4: Escenario adicional}
+
+En el escenario adicional planteado por la cátedra, se considera la operación conjunta de diferentes ramales dentro de la línea Mitre. Actualmente, cada ramal opera de manera independiente, utilizando su propio material rodante sin compartir recursos entre los ramales. La empresa ferroviaria busca evaluar si sería más conveniente unificar la operación de los ramales, permitiendo el uso compartido del material rodante a lo largo de toda la línea Mitre. Este cambio implicaría que el material rodante pueda quedar estacionado durante la noche en cualquiera de las cuatro estaciones principales (Retiro, Mitre, Victoria, y Cardales), lo que podría mejorar la reutilización de los recursos y reducir el número total de unidades necesarias. El análisis de este escenario permite estudiar el impacto de la decisión en términos de costos, eficiencia operativa, y capacidad para satisfacer la demanda. 
+
+El escenario se muestra mejor en el siguiente esquema:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{esquema_escenario_adic.png}
+    \caption{Opciones para la gestión de las unidades de la línea Retiro-Mitre y sus ramales}
+    \label{fig:ejemplo}
+\end{figure}
+
+Nosotros proponemos que operar las líneas juntas solo puede traer beneficios a la empresa. Al poder decidir si operar los ramales como una sola línea y compartir las unidades entre ramales o no, a lo sumo solo se puede reducir la cantidad de unidades rodantes necesarias en la línea.
+
+A coninuación se muestra un cronograma de ejemplo donde se ve el beneficio de operar los ramales como una única linea con posibilidad de que el material rodante pase la noche en cualquiera de las estaciones.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{escenario_adic_ejemplo.png}
+    \caption{Cronograma de ejemplo}
+    \label{fig:ejemplo}
+\end{figure}
+
+En el cronograma, a diferencia de antes, se indica un nuevo evento de tipo I (intermedio) para los servicios que pasan por la estación Victoria durante su recorrido. Si el servicio parte desde Victoria, no hay evento de tipo I. Para las soluciones, se asume que la capacidad de todos los arcos de tren es de 25 y que la capacidad de los vagones es de 100 unidades.
+
+Si se operasen los dos ramales como líneas independientes, las soluciones (como flujos) serían las siguientes:
+
+\begin{figure}[H]
+   \centering
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Retiro-Mitre.png}
+        \caption{Ramal Retiro-Mitre}
+        \label{fig:grafico1}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Retiro-Cardales.png}
+        \caption{Ramal Retiro-Cardales}
+        \label{fig:grafico2}
+    \end{minipage}
+    \label{fig:dos_graficos}
+\end{figure}
+
+Como se puede ver, en total se necesitarían 9 unidades rodantes para satisfacer la demanda de ambos ramales. Sin embargo, si se operasen los dos ramales como una sola línea con la posibilidad de compartir unidades entre eventos, la solución sería la siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{ramales_juntos.png}
+    \caption{Ramales como línea única}
+    \label{fig:ejemplo}
+\end{figure}
+
+En esta solución se puede ver que se puede satisfacer la demanda de toda la línea con solo 7 unidades rodantes. Así, al administrar ambos ramales como uno solo, se logró utilizar menos material rodante.
+
+\section*{Sección 5: Conclusiones}
+En este trabajo, se desarrolló un modelo para la planificación eficiente del material rodante algoritmos de flujo de costo mínimo aplicados a un grafo espacio-temporal. A lo largo de los experimentos realizados, se pudo validar la efectividad del modelo propuesto en comparación con el método tradicional utilizado por la empresa, abordando distintos escenarios de demanda y restricciones operativas
+
+También se encontró que aumentar el costo asociado a los traspasos nocturnos incentiva una mayor reutilización del material rodante durante el día. Este resultado indica que es posible reducir los costos operativos diarios ajustando adecuadamente las políticas de traspaso.
+
+En el análisis del escenario adicional, al considerar la unificación de los ramales y el uso compartido del material rodante a lo largo de toda la línea Mitre, se observó una disminución significativa en la cantidad total de unidades necesarias. La implementación de un sistema compartido permitiría menores costos operativos y una mayor flexibilidad para satisfacer la demanda en horarios pico, lo que sugiere una ventaja clara respecto a la operación independiente de cada ramal.
+
+A pesar de los resultados positivos, el estudio presenta algunas limitaciones. La simplificación del modelo, al asumir una capacidad infinita en las cabeceras y utilizar demandas generadas aleatoriamente, podría no reflejar completamente la complejidad de un cronograma real. Además, la complejidad temporal observada en el experimento de escalabilidad sugiere la necesidad de optimizar la implementación del algoritmo para manejar instancias más grandes con mayor eficiencia.
+
+En futuros trabajos, sería interesante explorar la inclusión de eventos intermedios adicionales y considerar variaciones en la capacidad del material rodante para reflejar mejor las condiciones reales. También se podrían analizar métodos alternativos para reducir la complejidad temporal del algoritmo, lo que permitiría una mejor aplicación directa en contextos operativos reales.
 
 \end{document}
