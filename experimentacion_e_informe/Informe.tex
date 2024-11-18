@@ -6,6 +6,8 @@
 \usepackage{indentfirst}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage[backend=biber,style=apa]{biblatex}
+\addbibresource{bibliografia.bib}
 
 \geometry{
     a4paper,
@@ -55,7 +57,7 @@ Se toma una versión simplificada con las siguientes consideraciones:
 \end{itemize}
 
 \section*{Sección 2: Modelado e implementación}
-Para la resolución del problema, se adaptó  el modelo propuesto por Alexander Schrijver REFERENCIA!!!. Dicho modelo se realiza a partir del cronograma, la informacion sobre la demanda y las restricciones de los servicios que recorren una linea durante el día, usando un digrafo que modele una red espacio-tiempo. Se formula la decisión como un problema de Circulación sobre la red que se reduce a un problema de Flujo de Costo Mínimo y se resuleve utilizando algoritmos de flujo. Tanto para la construcción de la red como para los algoritmos de flujo se utilizó la librería $NetworkX$ de Python.
+Para la resolución del problema, se adaptó  el modelo propuesto por \textcite{schrijver}. Dicho modelo se realiza a partir del cronograma, la informacion sobre la demanda y las restricciones de los servicios que recorren una linea durante el día, usando un digrafo que modele una red espacio-tiempo. Se formula la decisión como un problema de Circulación sobre la red que se reduce a un problema de Flujo de Costo Mínimo y se resuleve utilizando algoritmos de flujo. Tanto para la construcción de la red como para los algoritmos de flujo se utilizó la librería $NetworkX$ de Python.
 
 \subsection*{Creación del Grafo}
 
@@ -397,5 +399,7 @@ En el análisis del escenario adicional, al considerar la unificación de los ra
 A pesar de los resultados positivos, el estudio presenta algunas limitaciones. La simplificación del modelo, al asumir una capacidad infinita en las cabeceras y utilizar demandas generadas aleatoriamente, podría no reflejar completamente la complejidad de un cronograma real. Además, la complejidad temporal observada en el experimento de escalabilidad sugiere la necesidad de optimizar la implementación del algoritmo para manejar instancias más grandes con mayor eficiencia.
 
 En futuros trabajos, sería interesante explorar la inclusión de eventos intermedios adicionales y considerar variaciones en la capacidad del material rodante para reflejar mejor las condiciones reales. También se podrían analizar métodos alternativos para reducir la complejidad temporal del algoritmo, lo que permitiría una mejor aplicación directa en contextos operativos reales.
+
+\printbibliography
 
 \end{document}
