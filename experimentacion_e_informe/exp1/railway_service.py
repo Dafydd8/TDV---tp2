@@ -19,6 +19,7 @@ def create_graph(data):
     max_rs = data["rs_info"]["max_rs"] # Máximo de RS que se pueden usar
     a = data["stations"][0] # Estación 'a'
     b = data["stations"][1] # Estación 'b'
+    pesos = data["cost_per_unit"] # Pesos de las aristas de trasnoche
 
     nodos_estacion = {a: [], b: []} # Diccionario con los tiempos de salida y llegada de cada estación
 
@@ -39,6 +40,18 @@ def create_graph(data):
     nodos_estacion[a].sort()
     nodos_estacion[b].sort()
 
+    #agregar nodos de final del dia
+    final_a = a+"_0"
+    final_b = b+"_0"
+    G.add_node(final_a, demand = 0)
+    G.add_node(final_b, demand = 0)
+    #conectarlos entre si
+    G.add_edge(final_a, final_b, weight = 0, lower_bound = 0, upper_bound = 1e9)
+    G.add_edge(final_b, final_a, weight = 0, lower_bound = 0, upper_bound = 1e9)
+    #agregarlos a sus respectivas estaciones
+    nodos_estacion[a].append(0)
+    nodos_estacion[b].append(0)
+
     # Crear aristas entre los nodos de la misma estación
     for i in range(len(nodos_estacion[a])-1):
         primero = a+"_"+str(nodos_estacion[a][i])
@@ -51,16 +64,15 @@ def create_graph(data):
             G.add_edge(primero, segundo, weight = 0, lower_bound = 0, upper_bound = 1e9)
 
     # Crear aristas entre el último y el primer nodo de cada estación
+
     ultimo_a = a+"_"+str(nodos_estacion[a][-1])
     primero_a = a+"_"+str(nodos_estacion[a][0])
     ultimo_b = b+"_"+str(nodos_estacion[b][-1])
     primero_b = b+"_"+str(nodos_estacion[b][0])
     if ultimo_a != primero_a:
-        G.add_edge(ultimo_a, primero_a, weight = 1, lower_bound = 0, upper_bound = 1e9)
+        G.add_edge(ultimo_a, primero_a, weight = pesos[a], lower_bound = 0, upper_bound = 1e9)
     if ultimo_b != primero_b:
-        G.add_edge(ultimo_b, primero_b, weight = 1, lower_bound = 0, upper_bound = 1e9)
-    G.add_edge(ultimo_a, primero_b, weight = 1, lower_bound = 0, upper_bound = 1e9)
-    G.add_edge(ultimo_b, primero_a, weight = 1, lower_bound = 0, upper_bound = 1e9)
+        G.add_edge(ultimo_b, primero_b, weight = pesos[b], lower_bound = 0, upper_bound = 1e9)
 
     return G, nodos_estacion
 
@@ -97,14 +109,13 @@ def solve_circulacion(G):
 def get_cost(G, circulacion, nodos_estacion):
     '''Calcular el costo de una circulación considerando solo el peso de los arcos de trasnoche'''
     cost = 0
-    for a in nodos_estacion:
-        for b in nodos_estacion:
-            begin = nodos_estacion[a][0]
-            end = nodos_estacion[b][-1]
-            begin_str = a+"_"+str(begin)
-            end_str = b+"_"+str(end)
-            peso = G.get_edge_data(end_str, begin_str).get("weight", None)
-            cost += circulacion[end_str][begin_str] *  peso # Sumar al costo el flujo de la arista de trasnoche
+    for estacion in nodos_estacion:        
+        begin = nodos_estacion[estacion][0]
+        end = nodos_estacion[estacion][-1]
+        begin_str = estacion+"_"+str(begin)
+        end_str = estacion+"_"+str(end)
+        peso = G.get_edge_data(end_str, begin_str).get("weight", None)
+        cost += circulacion[end_str][begin_str] *  peso # Sumar al costo el flujo de la arista de trasnoche
     return cost
 
 def show_graph(G, data, nodos_estacion):
@@ -216,4 +227,5 @@ def modelo_circulacion(data):
 
     # RESOLVER EL PROBLEMA COMO PROBLEMA DE CIRCULACIÓN #
     circulacion = solve_circulacion(grafo)
+    #show_flow(grafo, circulacion, data, nodos_estacion)
     return get_cost(grafo, circulacion, nodos_estacion)

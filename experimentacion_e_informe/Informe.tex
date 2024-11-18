@@ -39,7 +39,8 @@ En este informe se pueden encontrar las secciones:
     \item Sección 1: se describe el problema, las restricciones y las consideraciones del mismo.
     \item Sección 2: se describe la metodología, explicando cómo se modeló el problema y se implementó dicho modelo.
     \item Sección 3: detalla los experimentos realizados, presentando hipótesis, diseño de pruebas y resultados obtenidos.
-    \item Sección 4: se presentan las conclusiones, discutiendo la efectividad del modelo y posibles extensiones para trabajos futuros.
+    \item Sección 4: se analiza el $Escenario Adicional$ propuesto por la cátedra.
+    \item Sección 5: se presentan las conclusiones, discutiendo la efectividad del modelo y posibles extensiones para trabajos futuros.
 \end{itemize}
 
 \section*{Sección 1: El problema}
@@ -58,17 +59,17 @@ Para la resolución del problema, se adaptó  el modelo propuesto por Alexander 
 
 \subsection*{Creación del Grafo}
 
-La resolución comienza con la construcción del digrafo de la red. El mismo contiene un conjunto de vértices $V$, donde cada vértice representa un evento de llegada o salida a una estación. Dicho nodo tiene como etiqueta el nombre de la estación y el horario correspondiente y posee un imbalance igual a 0. El conjunto $A$ de arcos del digrafo está compuesto por tres tipos:
+La resolución comienza con la construcción del digrafo de la red. El mismo contiene un conjunto de vértices $V$, donde cada vértice representa un evento de llegada o salida a una estación. Dicho nodo tiene como etiqueta el nombre de la estación y el horario correspondiente y posee un imbalance igual a 0. Además, se agregan dos nodos que representan el final del día de cada estación, con etiqueta  \texttt{\{estacion\}\_0} (porque es un evento que ocurre a las 00:00).
+
+El conjunto $A$ de arcos del digrafo está compuesto por tres tipos:
 
 \begin{itemize}
     \item de tren: $(i, j)$ conecta el evento de partida y el de arribo de un servicio, representando el viaje del servicio desde su estacion origen a su estación destino. Estos arcos cuentan con una cota inferior $l_{ij}$ de la cantidad de unidades necesarias para satisfacer la demanda y una cota superior $u_{ij}$ de la cantidad maxima de unidades que pueden circular en un servicio. El costo es $c_{ij} = 0$.
     \item de traspaso: $(i, j)$ conecta dos eventos consecutivos (en tiempo) dentro de una estación, indicando el pasaje de unidades entre eventos. Esta arista tiene cota inferior $l_{ij} = 0$, $u_{ij} = \infty$ y costo $c_{ij} = 0$.
-    \item de trasnoche: dos de ellas, una para cada estación, conectan el ultimo evento del día con el primero. Modela las condiciones de borde respecto que la cantidad de unidades al finalizar el día en una estación debe ser la necesaria para poder iniciar las operaciones al día siguiente.
-
-Otros dos arcos conectan el último evento de una estación con el primero de la otra. Modela el traspaso de unidades al final de un dia entre estaciones para la utilización al comienzo del siguiente.
-
-Inicialmente, todos estos arcos tienen $l_{ij}= 0$, $u_{ij} = \infty$ y $c_{ij} = 1$. Además, estos arcos son los utilizados para obtener la cantidad de unidades de material rodantes necesarias en la línea.
+    \item de reordenamiento: $(i, j)$ conecta los eventos del final del dia de cada estación mutuamente. Simula el pasaje de unidades entre estaciones una vez que terminó el día. Estas aristas tienen cota inferior $l_{ij} = 0$, $u_{ij} = \infty$ (si bien son unidades viajando por la línea, se asume que se podrían hacer tantos viajes como fuesen necesarios), y costo $c_{ij} = 0$ (no implican agregar unidades extra a la línea).
+    \item de trasnoche: una para cada estación, conectan el ultimo evento del día (el nodo de final del día) con el primero. Modela las condiciones de borde respecto que la cantidad de unidades al finalizar el día en una estación debe ser la necesaria para poder iniciar las operaciones al día siguiente. Estos arcos tienen $l_{ij}= 0$, $u_{ij} = \infty$ y $c_{ij} = 1$. Además, estos arcos son los utilizados para obtener la cantidad de unidades de material rodantes necesarias en la línea.
 \end{itemize}
+
 
 La construcción del grafo se realiza con el método \texttt{create\_graph()} que, al igual que todos los demás métodos de esta implementación, se encuentra implementado en el archivo \texttt{railway\_service.py}. 
 
@@ -77,10 +78,10 @@ La construcción del grafo se realiza con el método \texttt{create\_graph()} qu
 El algoritmo recibe un diccionario \texttt{data} con la siguiente estructura:
 
 \begin{itemize}
-    \item \texttt{data["services"]}: Diccionario que contiene la información de los servicios (horarios de salida y llegada, demanda).
+    \item \texttt{data["services"]}: Diccionario que contiene los servicios, incluyendo horarios de salida y llegada, y demanda de pasajeros.
     \item \texttt{data["rs\_info"]["capacity"]}: Capacidad del material rodante (RS).
-    \item \texttt{data["rs\_info"]["max\_rs"]}: Máximo número de unidades de RS disponibles.
-    \item \texttt{data["stations"]}: Lista de estaciones, en este caso, se consideran las estaciones \texttt{a} y \texttt{b}.
+    \item \texttt{data["rs\_info"]["max\_rs"]}: Número máximo de unidades de RS disponibles.
+    \item \texttt{data["stations"]}: Lista de estaciones, cabecera.
 \end{itemize}
 
 \subsubsection*{Proceso del Algoritmo}
@@ -90,34 +91,34 @@ El algoritmo recibe un diccionario \texttt{data} con la siguiente estructura:
     Se crea un grafo dirigido \texttt{G} utilizando NetworkX y se define un diccionario \texttt{nodos\_estacion} para almacenar los tiempos de salida y llegada de cada estación.
 
     \item \textbf{Creación de Nodos y Aristas de Servicios}:
-    Para cada servicio en \texttt{data["services"]}, se extraen los horarios de salida y llegada. Se calculan los RS necesarios dividiendo la demanda del servicio por la capacidad de los RS. 
-    Se crean nodos para los tiempos de salida y llegada del servicio y se añade una arista dirigida entre ellos, con:
+    Para cada servicio en \texttt{data["services"]}, se extraen los horarios de salida y llegada, y se crean etiquetas para los nodos (\texttt{salida\_str} y \texttt{llegada\_str}). Se calcula la cantidad de RS necesarios y se crean aristas con:
     \begin{itemize}
-        \item \textbf{Peso (\texttt{weight})}: Inicialmente 0, ya que no hay costo asociado al servicio.
-        \item \textbf{Cota mínima (\texttt{lower\_bound})}: Igual al número de RS necesarios para el servicio.
-        \item \textbf{Cota máxima (\texttt{upper\_bound})}: Igual al máximo número de RS que pueden circular.
+        \item \textbf{Peso (\texttt{weight})}: 0, ya que no hay costo asociado al servicio.
+        \item \textbf{Cota mínima (\texttt{lower\_bound})}: Igual al número de RS necesarios para cumplir la demanda.
+        \item \textbf{Cota máxima (\texttt{upper\_bound})}: Igual al máximo número de RS disponibles.
     \end{itemize}
+
+    \item \textbf{Creación de Nodos de Final del Día}:
+    Se agregan nodos adicionales para representar el final del día en cada estación (\texttt{final\_a} y \texttt{final\_b}), y se conectan entre sí con aristas para permitir el traspaso de material rodante.
 
     \item \textbf{Creación de Aristas Internas en las Estaciones}:
-    Para cada estación, se ordenan los tiempos de salida y llegada. Se crean aristas dirigidas entre tiempos consecutivos dentro de la misma estación para modelar el flujo continuo de trenes, con:
+    Para cada estación, se ordenan los tiempos de salida y llegada, y se crean aristas dirigidas entre tiempos consecutivos dentro de la misma estación, con:
     \begin{itemize}
-        \item \textbf{Peso (\texttt{weight})}: 0, ya que no hay costo asociado al traspaso de unidades entre servicios de una misma estacion.
+        \item \textbf{Peso (\texttt{weight})}: 0.
         \item \textbf{Cota mínima (\texttt{lower\_bound})}: 0.
-        \item \textbf{Cota máxima (\texttt{upper\_bound})}: Se fija en un valor alto (1e9).
+        \item \textbf{Cota máxima (\texttt{upper\_bound})}: 1e9.
     \end{itemize}
 
-    \item \textbf{Creación de Aristas Cíclicas}:
-    Para garantizar la circulación continua del material rodante, se crean aristas entre el último y el primer nodo de cada estación. Estas aristas tienen un costo (\texttt{weight}) de 1, representando el costo adicional de mover unidades de RS entre servicios.
+    \item \textbf{Creación de Aristas Cíclicas en las Estaciones}:
+    Se conectan el último nodo de cada estación con el primer nodo de la misma estación, con un costo (\texttt{weight}) de 1.
 
-    \item \textbf{Aristas de Conexión entre Estaciones}:
-    Se agregan aristas de conexión entre las estaciones \texttt{a} y \texttt{b} para modelar los traspasos posibles entre estaciones al final del día. Estas aristas también tienen un costo (\texttt{weight}) de 1 para representar el costo de los traspasos nocturnos.
 \end{enumerate}
 
 \subsubsection*{Salida del Algoritmo}
 
 El método devuelve:
 \begin{itemize}
-    \item \texttt{G}: El grafo dirigido que modela el problema de circulación, con nodos y aristas etiquetados con las demandas y capacidades correspondientes.
+    \item \texttt{G}: El grafo dirigido que modela el problema de circulación, con nodos etiquetados con horarios y aristas con atributos de imbalance, capacidad máxima y cota mínima.
     \item \texttt{nodos\_estacion}: Un diccionario con los tiempos de salida y llegada de cada estación, ordenados de menor a mayor.
 \end{itemize}
 
@@ -268,5 +269,40 @@ Para esto, se generaron diez instancias para cada tipo de demanda media: baja (5
 
 Como se puede apreciar, medida que la demanda media aumenta linealmente (saltos de 500 pasajeros), la cantidad de unidades necesarias promedio para cubrir la demanda también lo hace. Así, nuestra hipótesis no puede ser comprobada.
 
+\subsection*{Experimento 3: Impacto de las Cotas Máximas en la Utilización del Material Rodante}
+
+La idea es analizar cómo afectan las restricciones de las cotas máximas en los servicios a la solución óptima. Nuestra hipótesis es que disminuir la cota máxima de los servicios forzará un aumento en la cantidad de unidades nuevas, ya que se limitará la reutilización del material rodante.
+
+Para este experimento generamos 10 csv con demanda media 500 y varianza 200, y los convertimos a instancias con distintas cotas máximas. Las cotas utilizadas fueron: 25, 20, 15, 10. Luego se corrió el modelo de circulación sobre todas las instancias y se promedió la cantidad de unidades necesarias para cada una de las cotas. El resultado se muestra en la siguiente tabla:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{exp3/unidades_promedio.png}
+    \caption{Unidades necesarias promedio para distintas cotas máximas}
+    \label{fig:ejemplo}
+\end{figure}
+
+Al contrario de lo esperado, no varió la cantidad de unidades necesitadas. Luego de mirar con detenimiento lo que pasaba en distintas instancias, vimos que si bien ocurría que se modificaba la cantidad de flujo circulante entre los eventos del día, este cambio se compensaba con los viajes añadidos de final del dia entre estaciones, que tienen capacidad ilimitada.
+
+\subsection*{Experimento 4: Evaluación del Costo del Traspaso Nocturno}
+
+Queremos estudiar el impacto del costo asociado a los traspasos nocturnos en la cantidad de unidades utilizadas. Que los costos de los arcos de trasnoche no sea el mismo para ambas estaciones, representaría que hay una estación en la que es más costoso dejar los trenes para que pasen la noche. Nuestra hipótesis es que para demandas bajas en relación a la capacidad máxima de la red, se podrá ajustar el flujo con los arcos del día para maximizar el uso de los arcos de trasnoche baratos y mantener mínimo el costo total, mientras que para demandas altas será inevitable tener que usar los arcos de trasnoche más caros.
+
+Para este experimento usamos los mismos csv del experimento 1 para la demanda baja y generamos diez nuevos con demanda normal con media 1800 y varianza 200 para la demanda alta. Al convertir los csv a instancias, lo hicimos una vez con costos de los arcos de trasnoche iguales  y una vez con un costo mayor al otro. Así, se obtienen dos configuraciones de costos, $costos_1 = (1, 1)$ y $costos_2 = (1, 2)$ para cada cronograma.  
+
+Luego, se resolvió el problema para todas las instancias, obteniendo para cada cronograma una cantidad de unidades necesarias con la configuración $costos_1$ (la llamaremos $\#c_1$) y una cantidad de unidades necesarias con la configuración $costos_1$ (la llamaremos $\#c_2$).
+
+Finalmente, para cada cronograma, se calcula la proporción de aumento en las unidades necesarias como $\frac{\#c_1}{\#c_2}$. La implementación del experimento, las instancias y los resultados se encuentran en \texttt{experimentacion\_e\_informe} $/$ \texttt{exp3}. Adeás, se muestran los resultados a continuación en forma de boxplot:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{exp4/cocientes.png}
+    \caption{Cociente $\frac{\#c_1}{\#c_2}$, según la demanda}
+    \label{fig:ejemplo}
+\end{figure}
+
+Como se esperaba, parece haber evidencia de que el aumento proporcional es mayor para demandas altas que para demandas bajas. 
+
+\subsection*{Experimento 5: Escalabilidad del modelo}
 
 \end{document}

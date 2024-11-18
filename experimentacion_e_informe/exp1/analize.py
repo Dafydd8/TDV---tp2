@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-f_out = open(os.path.join(os.path.dirname(__file__), f'media_baja/resultados.csv'), 'w')
+f_out = open(os.path.join(os.path.dirname(__file__), f'media_alta/resultados.csv'), 'w')
 f_out.write('archivo,costo_empresa,costo_circulacion\n')
 results_empresa = []
 results_circulacion = []
@@ -13,7 +13,7 @@ for i in range(10):
     ##################
     # CARGAR LA DATA #
     ##################
-    file_name = os.path.join(os.path.dirname(__file__), f'media_baja/demandas_normales{i+1}.json')
+    file_name = os.path.join(os.path.dirname(__file__), f'media_alta/demandas_normales{i+1}.json')
     data = load_instance(file_name)
 
     ###########################################

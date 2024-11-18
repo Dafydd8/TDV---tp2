@@ -11,7 +11,7 @@ data = load_instance(file_name)
 # CREAR Y MOSTRAR EL GRAFO COMO SE PROPONE EN EL ENUNCIADO #
 ############################################################
 grafo, nodos_estacion = create_graph(data)
-#show_graph(grafo, data, nodos_estacion)
+show_graph(grafo, data, nodos_estacion)
 
 ###################################################################################
 # RESOLVER EL PROBLEMA COMO PROBLEMA DE CIRCULACIÓN Y MOSTRAR EL FLUJO RESULTANTE #
