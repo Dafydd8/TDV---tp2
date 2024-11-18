@@ -1,7 +1,9 @@
-from railway_service import *
+import sys
 import os
+directorio = os.path.join(os.path.dirname(__file__), '../../src')
+sys.path.append(directorio)
+from railway_service import *
 import matplotlib.pyplot as plt
-import numpy as np
 
 f_out = open(os.path.join(os.path.dirname(__file__), f'resultados.csv'), 'w')
 f_out.write('instancia,costo_1,costo_2,proporcion,demanda_media\n')

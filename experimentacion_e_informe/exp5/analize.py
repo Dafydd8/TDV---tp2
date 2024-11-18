@@ -1,5 +1,8 @@
-from railway_service import *
+import sys
 import os
+directorio = os.path.join(os.path.dirname(__file__), '../../src')
+sys.path.append(directorio)
+from railway_service import *
 import numpy as np
 import time
 
