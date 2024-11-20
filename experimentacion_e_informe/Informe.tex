@@ -214,10 +214,13 @@ Se implementaron otros métodos para facilitar la implementación de los algorit
 
 \end{itemize}
 
-Los algoritmos desarrollados e implementados se testearon con la instancia \texttt{toy\_instance} propuesta por la cátedra y otras instancias que representan distintos casos bordes. Dichas instancias se encuentran en la carpeta \texttt{test} y son:
+Para mayor claridad, en los archivos \texttt{uso\_funciones.py} y \texttt{main.py} de la carpeta \texttt{src} se pueden ver ejemplos de uso de los métodos implementados.
+
+Finalmente, los algoritmos desarrollados e implementados se testearon con la instancia \texttt{toy\_instance} propuesta por la cátedra y otras instancias que representan distintos casos bordes. Dichas instancias se encuentran en la carpeta \texttt{test} y son:
 
 \begin{itemize}
 	\item \texttt{catch\_and\_shoot}: caso en el que cada salida de una estación se puede cubrir con stock existente en la misma proveniente de una llegada previa.
+	\item \texttt{salidas\_simultanea}: caso en el que cada estación tiene dos salidas que ocurren al mismo tiempo.
 	\item \texttt{descordinados}: caso en el que cada salida necesitas generar unidades nuevas, es decir, no hay forma de optimizar la cantidad de unidades mediante el traspaso de las mismas entre eventos.
 	\item \texttt{one\_sends}: caso en el que solo una estación envía unidades.
 	\item \texttt{dia\_comun}: cronograma que busca emular las demandas aproximadas de una linea de tren un día normal de la semana.
